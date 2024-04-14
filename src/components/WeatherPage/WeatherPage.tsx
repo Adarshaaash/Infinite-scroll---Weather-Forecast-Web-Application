@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchWeather } from '../services/weatherService';
+import SearchBar from './Search'; // Import the SearchBar component
 
 interface WeatherPageProps {
     cityName: string;
@@ -65,27 +66,44 @@ const WeatherPage: React.FC<WeatherPageProps> = () => {
         }
     }, [weatherData]);
 
-    return ( <div>  
-        <div
-            className={`min-h-screen z-10 w-full bg-cover bg-center relative`}
-            style={{ backgroundImage: `url(/images/weather/${bgimg})` }}
-        >  <Link to="/" className="cursor-pointer absolute top-10 ml-10 z-50 ">Back to Cities</Link>
-            <div className="absolute top-0  left-0 w-full h-full bg-black opacity-50"></div>
-            <div className="relative z-10  top-48 text-white text-center">
-               
-                <h1 className="text-4xl font-bold">Weather for {cityName}</h1>
-                {isLoading && <p>Loading...</p>}
-                {error && <p>{error}</p>}
-                {weatherData && (
-                    <div>
-                        <p>Description: {weatherData.weather[0].description}</p>
-                        <p>Temperature: {weatherData.main.temp} °C</p>
-                        {/* Add more weather info as needed */}
-                    </div>
-                )}
+    const handleSearch = async (searchTerm: string) => {
+        setIsLoading(true);
+        try {
+            const response = await fetchWeather(searchTerm); 
+            setWeatherData(response);
+            setError(null);
+        } catch (err) {
+            setError('Error fetching weather data'); 
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div>  
+            <div
+                className={`min-h-screen z-10 w-full bg-cover bg-center relative`}
+                style={{ backgroundImage: `url(/images/weather/${bgimg})` }}
+            >  
+                <Link to="/" className="cursor-pointer absolute top-10 ml-10 z-50 ">Back to Cities</Link>
+                <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
+                <div className="relative z-20 top-48 text-white text-center"> {/* Increase z-index here */}
+                    <h1 className="text-4xl font-bold">Weather {cityName}</h1>
+                   
+                    
+                    {isLoading && <p>Loading...</p>}
+                    {error && <p>{error}</p>}
+                    {weatherData && (
+                        <div>
+                            <p>Description: {weatherData.weather[0].description}</p>
+                            <p>Temperature: {weatherData.main.temp} °C</p>
+                            {/* Add more weather info as needed */}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div></div>
+        </div>
     );
-};
+}    
 
 export default WeatherPage;
